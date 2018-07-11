@@ -1,37 +1,37 @@
 package controller
 
 import (
-	"github.com/fabric8-services/fabric8-wit/app"
-		"github.com/fabric8-services/fabric8-wit/jsonapi"
-	"github.com/goadesign/goa"
-	"net/http"
-	"github.com/satori/go.uuid"
-	"path/filepath"
 	"encoding/json"
+	"net/http"
 	"strings"
-	"io/ioutil"
-	)
+
+	"github.com/fabric8-services/fabric8-wit/app"
+	"github.com/fabric8-services/fabric8-wit/jsonapi"
+	"github.com/fabric8-services/fabric8-wit/swagger"
+	"github.com/goadesign/goa"
+	"github.com/satori/go.uuid"
+)
 
 const (
-	X_TAG = "x-tag"
-	PATHS = "paths"
-	LINKS = "links"
-	RELATED = "related"
-	FRWD_SLASH = "/"
-	BRACKET = "{"
-	UNDERSCORE = "_"
-	EMPTY_STR = ""
-	SWAGGER = "swagger/swagger.json"
+	X_TAG           = "x-tag"
+	PATHS           = "paths"
+	LINKS           = "links"
+	RELATED         = "related"
+	FRWD_SLASH      = "/"
+	BRACKET         = "{"
+	UNDERSCORE      = "_"
+	EMPTY_STR       = ""
+	SWAGGER         = "swagger.json"
 	ROOT_CONTROLLER = "RootController"
-	BASE_PATH = "basePath"
+	BASE_PATH       = "basePath"
 )
 
 // Root describes a single Root
 type Root struct {
-	Relationships	map[string]interface{}
-	Attributes   	interface{}
-	ID              uuid.UUID `sql:"type:uuid default uuid_generate_v4()" gorm:"primary_key"`
-	BasePath      	string
+	Relationships map[string]interface{}
+	Attributes    interface{}
+	ID            uuid.UUID `sql:"type:uuid default uuid_generate_v4()" gorm:"primary_key"`
+	BasePath      string
 }
 
 // RootController implements the root resource.
@@ -63,8 +63,8 @@ func (c *RootController) List(ctx *app.ListRootContext) error {
 func convertRoot(request *http.Request, root Root) *app.Root {
 	selfURL := request.Host + root.BasePath
 	l := &app.Root{
-		Relationships:root.Relationships,
-		Attributes:&root.Attributes,
+		Relationships: root.Relationships,
+		Attributes:    &root.Attributes,
 		Links: &app.GenericLinksForRoot{
 			Self: &selfURL,
 		},
@@ -76,15 +76,16 @@ func convertRoot(request *http.Request, root Root) *app.Root {
 // Get a list of all endpoints formatted to json api format
 func getRoot() (Root, error) {
 
-	s, e := filepath.Abs(SWAGGER)
-	swaggerJSON, err := ioutil.ReadFile(s)
+	// s, e := filepath.Abs(SWAGGER)
+	// swaggerJSON, err := ioutil.ReadFile(s)
+	swaggerJSON, err := swagger.Asset(SWAGGER)
 
 	if err != nil && e != nil {
 		// TODO: log error
 	}
 
 	var result map[string]interface{}
-	json.Unmarshal([]byte(swaggerJSON), &result)
+	json.Unmarshal(swaggerJSON, &result)
 
 	swaggerPaths := result[PATHS].(map[string]interface{})
 	namedPaths := make(map[string]interface{})
@@ -112,6 +113,6 @@ func getRoot() (Root, error) {
 		}
 	}
 
-	root := Root{Relationships: namedPaths, Attributes: map[string]string{}, ID: uuid.NewV4(), BasePath:result[BASE_PATH].(string)}
+	root := Root{Relationships: namedPaths, Attributes: map[string]string{}, ID: uuid.NewV4(), BasePath: result[BASE_PATH].(string)}
 	return root, err
 }
