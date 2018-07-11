@@ -189,9 +189,9 @@ spacetemplate/template_assets.go: $(GO_BINDATA_BIN) $(wildcard spacetemplate/ass
 		spacetemplate/assets
 
 # TINA KURIAN
-swagger/swagger.json: $(GO_BINDATA_BIN) $(wildcard swagger/*.json)
+swagger/swagger_assets.go: $(GO_BINDATA_BIN) $(wildcard swagger/*.json)
 	$(GO_BINDATA_BIN) \
-		-o swagger/swagger.json \
+		-o swagger/swagger_assets.go \
 		-pkg swagger \
 		-prefix swagger \
 		-nocompress \
@@ -304,7 +304,7 @@ migrate-database: $(BINARY_SERVER_BIN)
 
 .PHONY: generate
 ## Generate GOA sources. Only necessary after clean of if changed `design` folder.
-generate: app/controllers.go migration/sqlbindata.go spacetemplate/template_assets.go generate-minimock 
+generate: app/controllers.go migration/sqlbindata.go spacetemplate/template_assets.go swagger/swagger_assets.go generate-minimock 
 
 .PHONY: regenerate
 ## Runs the "clean-generated" and the "generate" target
